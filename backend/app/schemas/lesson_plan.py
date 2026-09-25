@@ -49,12 +49,21 @@ class LessonPlanGenerateResponse(BaseModel):
     student_count: int
     duration_minutes: int
     
-    learning_objective: list[str]
+    learning_objectives: list[str]
     teaching_activities: list[TeachingActivity]
     differentiated_activities: list[DifferentiatedActivity]
     assessment_questions: list[AssessmentQuestion]
     marking_rubric: list[RubricCriterion]
     homework: list[str]
-    revision_question: list[str]
+    revision_questions: list[str]
     
     generated_at: datetime
+    
+class LessonContentAIResult(BaseModel):
+    learning_objectives: list[str]
+    teaching_activities: list[TeachingActivity]
+    differentiated_activities: list[DifferentiatedActivity]
+    assessment_questions: list[AssessmentQuestion]
+    marking_rubric: list[RubricCriterion]
+    homework: list[str]
+    revision_questions: list[str]

@@ -7,3 +7,4 @@ from app.models.class_enrollment import ClassEnrollment
 from app.models.school_class import SchoolClass
 from app.models.lesson_content import LessonContent
 from app.models.lesson_plan import LessonPlan
+from app.models.ai_request_log import AIRequestLog

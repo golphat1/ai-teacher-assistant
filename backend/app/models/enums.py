@@ -25,3 +25,12 @@ class LessonStatus(str, enum.Enum):
     DRAFT = "draft"
     GENERATED = "generated"
     PUBLISHED = "published"
+    
+class QuestionType(str, enum.Enum):
+    MCQ = "mcq"
+    SHORT_ANSWER = "short_answer"
+    ESSAY = "essay"
+
+class SubmissionStatus(str, enum.Enum):
+    SUBMITTED = "submitted"
+    ANALYZED = "analyzed"

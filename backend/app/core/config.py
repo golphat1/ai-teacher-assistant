@@ -1,6 +1,13 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+ai_provider: str = "anthropic"
+anthropic_api_key: str | None = None
+anthropic_model: str = "claude-sonnet-4-6"
+openai_api_key: str | None = None
+openai_model: str = "gpt-4o"
+ai_max_retries: int = 2
+use_mock_ai: bool = True  # flip to false once real keys are set
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(

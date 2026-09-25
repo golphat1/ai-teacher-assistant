@@ -47,3 +47,6 @@ class School(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     # resolves the string against its mapper registry once all models
     # have loaded, regardless of import order.
     users: Mapped[list["User"]] = relationship("User", back_populates="school")
+    
+    grade_release_policy: Mapped[str] = mapped_column(String(30), nullable=False, default="requires_teacher_review")
+    # values: "auto_release" | "requires_teacher_review"

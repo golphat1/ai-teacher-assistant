@@ -1,19 +1,25 @@
+import { useState } from 'react';
 import LessonRequestForm from '../features/lessons/LessonRequestForm';
-
-// Mock submit handler — simulates a network call so the form's loading/error/success
-// states are all exercised locally, with no backend call yet.
-async function mockSubmitLessonRequest(payload) {
-  console.log('Lesson request payload:', payload);
-  await new Promise((resolve) => setTimeout(resolve, 1200));
-
-  // Uncomment to test the error state:
-  // throw new Error('Could not reach the server. Please try again.');
-}
+import LessonPlanResult from '../features/lessons/LessonPlanResult';
+import { generateLessonPlan } from '../api/lessons';
 
 export default function TeacherDashboardPage() {
+  const [result, setResult] = useState(null);
+
+  const handleSubmit = async (formValues) => {
+    const response = await generateLessonPlan(formValues);
+    // ApiError thrown here propagates up to the form's own error handling —
+    // this function intentionally does NOT catch it.
+    setResult(response);
+  };
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-      <LessonRequestForm onSubmit={mockSubmitLessonRequest} />
+    <div className="space-y-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <LessonRequestForm onSubmit={handleSubmit} />
+      </div>
+
+      {result && <LessonPlanResult result={result} />}
     </div>
   );
 }
