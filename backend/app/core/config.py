@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     app_name: str = "AI Teacher Assistant"
     environment: str = "development"
     debug: bool = False
+    ai_max_retries: int = 2
+    use_mock_ai: bool = True
 
     # CORS
     cors_origins: str = "http://localhost:5173"

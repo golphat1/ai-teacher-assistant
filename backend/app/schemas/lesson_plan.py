@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 class LessonPlanGenerateRequest(BaseModel):
-    class_id: uuid.UUID
+    class_id: uuid.UUID | None = None
     grade: str = Field(min_length=1, max_length=50)
     subject: str = Field(min_length=1, max_length=100)
     topic: str = Field(min_length=2, max_length=255)

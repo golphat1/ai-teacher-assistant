@@ -29,9 +29,13 @@ class LessonPlan(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
     
-    class_id: Mapped[uuid.UUID] = mapped_column(
-    UUID(as_uuid=True), ForeignKey("class.id"), nullable=False, index=True
-    )
+    #class_id: Mapped[uuid.UUID] = mapped_column(
+    #UUID(as_uuid=True), ForeignKey("class.id"), nullable=False, index=True
+    #)
+    
+    class_id: Mapped[uuid.UUID | None] = mapped_column(
+    ForeignKey("class.id"), nullable=True
+)
     
     grade: Mapped[str] = mapped_column(String(50), nullable=False)
     subject: Mapped[str] = mapped_column(String(100), nullable=False)
