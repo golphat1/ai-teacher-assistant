@@ -1,12 +1,17 @@
 # backend/app/models/submission_analysis.py
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
+
 from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
 from app.models.mixins import UUIDPrimaryKeyMixin
+
+if TYPE_CHECKING:
+    from app.models.submission import StudentSubmission
 
 
 class SubmissionAnalysis(UUIDPrimaryKeyMixin, Base):
@@ -20,3 +25,5 @@ class SubmissionAnalysis(UUIDPrimaryKeyMixin, Base):
     recommendations: Mapped[list] = mapped_column(JSONB, nullable=False)
     ai_provider_used: Mapped[str] = mapped_column(String(50), nullable=False)
     analyzed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    submission: Mapped["StudentSubmission"] = relationship(back_populates="analysis")

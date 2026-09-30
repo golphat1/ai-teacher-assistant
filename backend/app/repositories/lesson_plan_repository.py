@@ -20,8 +20,8 @@ class LessonPlanRepository:
     def attach_content(self, *, lesson_plan: LessonPlan, content_fields: dict, is_mock: bool) -> LessonContent:
         content = LessonContent(
             lesson_plan_id=lesson_plan.id,
-            learning_objective=content_fields["learning_objectives"],
-            teaching_activity=content_fields["teaching_activities"],
+            learning_objectives=content_fields["learning_objectives"],
+            teaching_activities=content_fields["teaching_activities"],
             differentiated_activities=content_fields["differentiated_activities"],
             assessment_questions=content_fields["assessment_questions"],
             marking_rubric=content_fields["marking_rubric"],

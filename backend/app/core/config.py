@@ -1,19 +1,12 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ai_provider: str = "anthropic"
-anthropic_api_key: str | None = None
-anthropic_model: str = "claude-sonnet-4-6"
-openai_api_key: str | None = None
-openai_model: str = "gpt-4o"
-ai_max_retries: int = 2
-use_mock_ai: bool = True  # flip to false once real keys are set
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env.teacher",
         env_file_encoding="utf-8",
-        extra="ignore"
+        extra="ignore",
     )
 
     # Database
@@ -30,8 +23,15 @@ class Settings(BaseSettings):
     app_name: str = "AI Teacher Assistant"
     environment: str = "development"
     debug: bool = False
+
+    # AI
+    ai_provider: str = "anthropic"
+    anthropic_api_key: str | None = None
+    anthropic_model: str = "claude-sonnet-4-6"
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-4o-mini"  # pick the one you want
     ai_max_retries: int = 2
-    use_mock_ai: bool = True
+    use_mock_ai: bool = True  # flip to false once real keys are set
 
     # CORS
     cors_origins: str = "http://localhost:5173"

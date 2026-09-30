@@ -30,6 +30,11 @@ class QuestionType(str, enum.Enum):
     MCQ = "mcq"
     SHORT_ANSWER = "short_answer"
     ESSAY = "essay"
+    
+class AssessmentType(str, enum.Enum):
+    FORMATIVE = "formative"
+    SUMMATIVE = "summative"
+    QUIZ = "quiz"
 
 class SubmissionStatus(str, enum.Enum):
     SUBMITTED = "submitted"

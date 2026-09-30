@@ -8,3 +8,7 @@ from app.models.school_class import SchoolClass
 from app.models.lesson_content import LessonContent
 from app.models.lesson_plan import LessonPlan
 from app.models.ai_request_log import AIRequestLog
+from app.models.assessment import Assessment, AssessmentQuestion  # noqa: F401
+from app.models.assignment import AssessmentAssignment  # noqa: F401
+from app.models.submission import StudentSubmission, SubmissionAnswer  # noqa: F401
+from app.models.submission_analysis import SubmissionAnalysis  # noqa: F401

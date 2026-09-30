@@ -3,6 +3,7 @@ from app.ai.provider_registry import get_provider
 from app.ai.providers.base import AIGenerationError
 from app.core.config import settings
 from app.schemas.lesson_plan import LessonContentAIResult
+from app.ai.prompts.lesson_generation_v2 import PROMPT_VERSION, SYSTEM_PROMPT, build_user_prompt
 
 
 class AIOrchestrator:

@@ -4,16 +4,33 @@ import pytest
 
 from app.ai.orchestrator import AIOrchestrator
 from app.ai.providers.base import AIGenerationError
-from app.schemas.lesson_plan import LessonContentAIResult, TeachingActivity, DifferentiatedActivity, AssessmentQuestion, RubricCriterion
+from app.schemas.lesson_plan import LessonContentAIResult, TeachingActivity, DifferentiatedActivity, AssessmentQuestion, RubricCriterion, RubricPerformanceLevel
 
 
 def _fake_result():
     return LessonContentAIResult(
         learning_objectives=["Objective one."],
-        teaching_activities=[TeachingActivity(title="Intro", description="desc", duration_minutes=10)],
+        teaching_activities=[
+            TeachingActivity(
+                title="Intro",
+                teacher_actions="Introduces the topic.",
+                student_actions="Listen and take notes.",
+                duration_minutes=10,
+            )
+        ],
         differentiated_activities=[DifferentiatedActivity(target_group="below_grade_level", description="desc")],
         assessment_questions=[AssessmentQuestion(question_text="Q?", question_type="short_answer", max_score=5)],
-        marking_rubric=[RubricCriterion(criterion="Understanding", description="desc", max_points=5)],
+        marking_rubric=[
+            RubricCriterion(
+                criterion="Understanding",
+                description="desc",
+                max_points=5,
+                performance_levels=[
+                    RubricPerformanceLevel(level="Proficient", descriptor="Clear and accurate.", points=5),
+                    RubricPerformanceLevel(level="Developing", descriptor="Partially correct.", points=2),
+                ],
+            )
+        ],
         homework=["Homework item."],
         revision_questions=["Revision Q?"],
     )

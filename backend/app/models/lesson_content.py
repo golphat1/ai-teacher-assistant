@@ -25,8 +25,9 @@ class LessonContent(UUIDPrimaryKeyMixin, Base):
     )
 
     # AI-generated sections stored as JSON
-    learning_objective: Mapped[list] = mapped_column(JSONB, nullable=False)
-    teaching_activity: Mapped[list] = mapped_column(JSONB, nullable=False)
+    learning_objectives: Mapped[list] = mapped_column(JSONB, nullable=False)
+    #teaching_activity: Mapped[list] = mapped_column(JSONB, nullable=False)
+    teaching_activities: Mapped[list] = mapped_column(JSONB, nullable=False)
     differentiated_activities: Mapped[list] = mapped_column(JSONB, nullable=False)
     assessment_questions: Mapped[list] = mapped_column(JSONB, nullable=False)
     marking_rubric: Mapped[list] = mapped_column(JSONB, nullable=False)
@@ -35,8 +36,8 @@ class LessonContent(UUIDPrimaryKeyMixin, Base):
 
     # Generation metadata
     is_mock: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    ai_provider_used: Mapped[str | None] = mapped_column(String, nullable=True)
-    ai_model_used: Mapped[str | None] = mapped_column(String, nullable=True)
+    ai_provider_used: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    ai_model_used: Mapped[str | None] = mapped_column(String(100), nullable=True)
    #ai_provider_used: Mapped[str] = mapped_column(String(50), nullable=False)
     #ai_model_used: Mapped[str] = mapped_column(String(100), nullable=False)
     generated_at: Mapped[datetime] = mapped_column(

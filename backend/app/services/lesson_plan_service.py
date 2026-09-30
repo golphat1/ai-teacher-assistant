@@ -8,6 +8,7 @@ from app.repositories.ai_request_log_repository import AIRequestLogRepository
 
 from sqlalchemy.orm import Session
 
+from app.repositories.ai_request_log_repository import AIRequestLogRepository
 from app.ai.mock_content_generator import generate_mock_lesson_content
 from app.models.enums import LessonStatus
 from app.models.user import User
@@ -19,7 +20,7 @@ class LessonPlanService:
     def __init__(self, db: Session):
         self.db = db
         self.lesson_plans = LessonPlanRepository(db)
-        self.ai_logs = AIOrchestrator()
+        self.ai_logs = AIRequestLogRepository(db)
         self.orchestrator = AIOrchestrator()
 
     def generate(self, *, request, teacher):

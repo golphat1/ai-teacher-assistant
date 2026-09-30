@@ -18,7 +18,8 @@ class LessonPlanGenerateRequest(BaseModel):
     
 class TeachingActivity(BaseModel):
     title: str
-    description: str
+    teacher_actions: str = Field(description="What the teacher specifically does during this activity.")
+    student_actions: str = Field(description="What students specifically do during this activity.")
     duration_minutes: int
     
 class DifferentiatedActivity(BaseModel):
@@ -31,10 +32,17 @@ class AssessmentQuestion(BaseModel):
     options: list[str] | None = None
     max_score: float
     
+class RubricPerformanceLevel(BaseModel):
+    level: str  # e.g. "Exemplary", "Proficient", "Developing", "Beginning"
+    descriptor: str = Field(description="What a response at this level actually looks like.")
+    points: float
+
+
 class RubricCriterion(BaseModel):
     criterion: str
     description: str
     max_points: float
+    performance_levels: list[RubricPerformanceLevel] = Field(min_length=2)
     
 class LessonPlanGenerateResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

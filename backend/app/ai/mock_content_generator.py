@@ -1,16 +1,9 @@
-"""
-Placeholder for the real AI orchestrator that lands in a later stage.
-
-This function's signature and return type (LessonPlanGenerateResponse's content
-fields) are exactly what AIOrchestrator.generate_lesson_content(...) will return
-once a real provider is wired in — so swapping this out is a one-function change
-in the service layer, not a rewrite of routers/schemas/models.
-"""
 from app.schemas.lesson_plan import (
     AssessmentQuestion,
     DifferentiatedActivity,
     LessonPlanGenerateRequest,
     RubricCriterion,
+    RubricPerformanceLevel,
     TeachingActivity,
 )
 
@@ -25,18 +18,20 @@ def generate_mock_lesson_content(request: LessonPlanGenerateRequest) -> dict:
         "teaching_activities": [
             TeachingActivity(
                 title="Warm-up discussion",
-                description=f"Brief class discussion introducing {request.topic}.",
+                teacher_actions=f"Poses an opening question about {request.topic} and facilitates discussion.",
+                student_actions="Share initial ideas and prior knowledge in a whole-class discussion.",
                 duration_minutes=10,
             ).model_dump(),
             TeachingActivity(
                 title="Guided practice",
-                description=f"Teacher-led walkthrough of a {request.topic} example, "
-                             f"scaled for a class of {request.student_count}.",
+                teacher_actions=f"Models a worked example related to {request.topic} on the board.",
+                student_actions="Follow along, ask clarifying questions, take notes.",
                 duration_minutes=25,
             ).model_dump(),
             TeachingActivity(
                 title="Independent activity",
-                description="Students work individually or in pairs to apply what was covered.",
+                teacher_actions="Circulates, checks understanding, and provides individual feedback.",
+                student_actions="Work individually or in pairs to apply what was covered.",
                 duration_minutes=request.duration_minutes - 35 if request.duration_minutes > 35 else 15,
             ).model_dump(),
         ],
@@ -68,11 +63,20 @@ def generate_mock_lesson_content(request: LessonPlanGenerateRequest) -> dict:
                 criterion="Understanding",
                 description="Demonstrates clear understanding of the core concept.",
                 max_points=5,
+                performance_levels=[
+                    RubricPerformanceLevel(level="Proficient", descriptor="Explains the concept accurately with a relevant example.", points=5),
+                    RubricPerformanceLevel(level="Developing", descriptor="Shows partial understanding but lacks a clear example.", points=3),
+                    RubricPerformanceLevel(level="Beginning", descriptor="Response is unclear or largely inaccurate.", points=1),
+                ],
             ).model_dump(),
             RubricCriterion(
                 criterion="Clarity",
                 description="Response is clearly and coherently expressed.",
                 max_points=3,
+                performance_levels=[
+                    RubricPerformanceLevel(level="Proficient", descriptor="Well-organized and easy to follow.", points=3),
+                    RubricPerformanceLevel(level="Developing", descriptor="Understandable but somewhat disorganized.", points=1),
+                ],
             ).model_dump(),
         ],
         "homework": [
