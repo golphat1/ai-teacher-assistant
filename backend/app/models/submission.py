@@ -34,6 +34,8 @@ class StudentSubmission(UUIDPrimaryKeyMixin, Base):
     analysis: Mapped["SubmissionAnalysis"] = relationship(
     back_populates="submission", uselist=False, cascade="all, delete-orphan"
 )
+    reviewed_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class SubmissionAnswer(UUIDPrimaryKeyMixin, Base):

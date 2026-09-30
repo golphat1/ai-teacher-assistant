@@ -1,7 +1,5 @@
-# backend/app/models/submission_analysis.py
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -9,14 +7,15 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
 from app.models.mixins import UUIDPrimaryKeyMixin
-
-if TYPE_CHECKING:
-    from app.models.submission import StudentSubmission
+from app.models.submission import StudentSubmission
 
 
 class SubmissionAnalysis(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "submission_analyses"
-    submission_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("student_submissions.id"), unique=True, nullable=False)
+
+    submission_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("student_submissions.id"), unique=True, nullable=False
+    )
     overall_score: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False)
     feedback_text: Mapped[str] = mapped_column(Text, nullable=False)
     strengths: Mapped[list] = mapped_column(JSONB, nullable=False)

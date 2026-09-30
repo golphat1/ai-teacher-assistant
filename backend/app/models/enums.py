@@ -39,3 +39,7 @@ class AssessmentType(str, enum.Enum):
 class SubmissionStatus(str, enum.Enum):
     SUBMITTED = "submitted"
     ANALYZED = "analyzed"
+    
+class GradeReleasePolicy(str, enum.Enum):
+    AUTO_RELEASE ="auto_release"
+    REQUIRES_TEACHER_REVIEW = "requires_teacher_review"

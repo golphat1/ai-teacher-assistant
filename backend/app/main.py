@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routers import school_ai_settings
 from app.core.config import settings
-from app.routers import auth, classes, health, lesson_plans, assessments, assignments, submissions
+from app.routers import auth, classes, health, lesson_plans, assessments, assignments, submissions, submission_analysis, review, reteach
 
 app = FastAPI(
     title=settings.app_name,
@@ -25,3 +26,7 @@ app.include_router(lesson_plans.router)
 app.include_router(assessments.router)
 app.include_router(assignments.router)
 app.include_router(submissions.router)
+app.include_router(submission_analysis.router)
+app.include_router(school_ai_settings.router)
+app.include_router(review.router)
+app.include_router(reteach.router)

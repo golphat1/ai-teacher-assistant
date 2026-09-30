@@ -3,6 +3,7 @@ from fastapi import HTTPException, status as http_status
 from app.ai.orchestrator import AIOrchestrator
 from app.ai.providers.base import AIGenerationError
 from app.ai.mock_content_generator import generate_mock_lesson_content
+from app.services.ai_budget_service import AIBudgetService
 from app.core.config import settings
 from app.repositories.ai_request_log_repository import AIRequestLogRepository
 
@@ -22,6 +23,7 @@ class LessonPlanService:
         self.lesson_plans = LessonPlanRepository(db)
         self.ai_logs = AIRequestLogRepository(db)
         self.orchestrator = AIOrchestrator()
+        self.budget = AIBudgetService(db)
 
     def generate(self, *, request, teacher):
         lesson_plan = self.lesson_plans.create(
@@ -37,6 +39,7 @@ class LessonPlanService:
             content_fields = generate_mock_lesson_content(request)
             is_mock, provider_name, model_name = True, None, None
         else:
+            self.budget.check_budget(teacher.school_id)
             try:
                 result, usage, provider_name, prompt_version = self.orchestrator.generate_lesson_content(request)
             except AIGenerationError as exc:

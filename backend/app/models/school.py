@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import String, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
 from app.models.mixins import UUIDPrimaryKeyMixin, TimestampMixin
+from app.models.enums import GradeReleasePolicy
 
 # Only import User for type-checking purposes, not at runtime.
 # This avoids a circular import: User probably imports School back
@@ -50,3 +51,9 @@ class School(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     
     grade_release_policy: Mapped[str] = mapped_column(String(30), nullable=False, default="requires_teacher_review")
     # values: "auto_release" | "requires_teacher_review"
+    
+    grade_release_policy: Mapped[GradeReleasePolicy] = mapped_column(
+    SAEnum(GradeReleasePolicy, name="grade_release_policy"),
+    nullable=False,
+    default=GradeReleasePolicy.REQUIRES_TEACHER_REVIEW,
+)
