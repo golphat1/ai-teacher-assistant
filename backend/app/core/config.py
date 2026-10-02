@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: str = "http://localhost:5173"
 
+    # Rate limiting
+    rate_limiting_enabled: bool = True
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",")]

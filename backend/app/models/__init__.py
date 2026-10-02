@@ -14,3 +14,4 @@ from app.models.submission import StudentSubmission, SubmissionAnswer  # noqa: F
 from app.models.submission_analysis import SubmissionAnalysis
 from app.models.school_ai_settings import SchoolAISettings
 from app.models.score_override_audit import ScoreOverrideAudit
+from app.models.class_analytics_snapshot import ClassAnalyticsSnapshot

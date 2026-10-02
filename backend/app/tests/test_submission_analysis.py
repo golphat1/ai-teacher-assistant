@@ -74,3 +74,25 @@ def test_analyze_submission_rejects_hallucinated_question_id(client, db_session)
         response = client.post(f"/submissions/{submission['id']}/analyze", headers=headers_t)
 
     assert response.status_code == 502
+    
+def test_get_analysis_endpoint_is_teacher_only_and_ownership_checked(client, db_session):
+    ctx = _full_setup(client, db_session)
+    headers_t = {"Authorization": f"Bearer {ctx['teacher_token']}"}
+    headers_s = {"Authorization": f"Bearer {ctx['student_token']}"}
+
+    assessment, assignment = _create_assessment_and_assignment(client, ctx, headers_t)
+    question_id = assessment["questions"][0]["id"]
+    submission = _submit_answer(client, ctx, question_id, headers_s, assignment["id"])
+
+    with patch(
+        "app.services.analysis_service.AIOrchestrator.analyze_submission",
+        return_value=(_analysis_result(question_id), {"prompt_tokens": 10, "completion_tokens": 10, "latency_ms": 5}, "anthropic", "v1"),
+    ):
+        client.post(f"/submissions/{submission['id']}/analyze", headers=headers_t)
+
+    # The student must NOT be able to see raw analysis directly — this is the exact bypass being closed.
+    student_attempt = client.get(f"/submissions/{submission['id']}/analysis", headers=headers_s)
+    assert student_attempt.status_code == 403
+
+    teacher_attempt = client.get(f"/submissions/{submission['id']}/analysis", headers=headers_t)
+    assert teacher_attempt.status_code == 200

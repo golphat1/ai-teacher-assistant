@@ -18,7 +18,7 @@ class ReviewService:
     def __init__(self, db: Session):
         self.db = db
 
-    def _get_submission_or_404(self, submission_id: uuid.UUID) -> StudentSubmission:
+    def _get_submission_or_404(self, submission_id: uuid.UUID, *, school_id: uuid.UUID) -> StudentSubmission:
         submission = (
             self.db.query(StudentSubmission)
             .options(selectinload(StudentSubmission.answers))
@@ -34,7 +34,7 @@ class ReviewService:
             raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail="You do not own this assignment.")
 
     def override_score(self, *, submission_id: uuid.UUID, answer_id: uuid.UUID, new_score: float, reason: str | None, teacher):
-        submission = self._get_submission_or_404(submission_id)
+        submission = self._get_submission_or_404(submission_id, school_id=teacher.school_id)
         self._assert_teacher_owns(submission, teacher)
 
         answer = next((a for a in submission.answers if a.id == answer_id), None)
@@ -55,7 +55,7 @@ class ReviewService:
         return audit
 
     def mark_reviewed(self, *, submission_id: uuid.UUID, teacher):
-        submission = self._get_submission_or_404(submission_id)
+        submission = self._get_submission_or_404(submission_id, school_id=teacher.school_id)
         self._assert_teacher_owns(submission, teacher)
 
         if submission.status != SubmissionStatus.ANALYZED:
@@ -75,7 +75,7 @@ class ReviewService:
         return self.db.get(School, school_class.school_id)
 
     def get_results_for_student(self, *, submission_id: uuid.UUID, student) -> SubmissionResultsRead:
-        submission = self._get_submission_or_404(submission_id)
+        submission = self._get_submission_or_404(submission_id, school_id=student.school_id)
         if submission.student_id != student.id:
             raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail="This is not your submission.")
 

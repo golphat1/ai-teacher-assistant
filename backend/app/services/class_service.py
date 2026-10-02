@@ -57,3 +57,6 @@ class ClassService:
 
         self.db.refresh(enrollment)
         return enrollment
+    
+    def list_classes_for_teacher(self, *, teacher):
+        return self.classes.list_for_teacher(teacher.id, school_id=teacher.school_id)

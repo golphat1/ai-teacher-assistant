@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user, require_roles
@@ -16,10 +16,14 @@ from app.schemas.auth import (
 from app.schemas.user import UserRead
 from app.services.auth_service import AuthService
 
+from fastapi import Request
+from app.core.rate_limit import limiter
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register/teacher", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register_teacher(payload: TeacherRegisterRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register_teacher(request: Request, response: Response, payload: TeacherRegisterRequest, db: Session = Depends(get_db)):
     service = AuthService(db)
     user = service.register_teacher(
         email=payload.email, password=payload.password, full_name=payload.full_name, school_id=payload.school_id
@@ -27,7 +31,8 @@ def register_teacher(payload: TeacherRegisterRequest, db: Session = Depends(get_
     return user
 
 @router.post("/register/student", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register_student(payload: StudentRegisterRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register_student(request: Request, response: Response, payload: StudentRegisterRequest, db: Session = Depends(get_db)):
     service = AuthService(db)
     user = service.register_student(
         email=payload.email, password=payload.password, full_name=payload.full_name, school_id=payload.school_id
@@ -35,7 +40,8 @@ def register_student(payload: StudentRegisterRequest, db: Session = Depends(get_
     return user
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login(request: Request, response: Response, payload: LoginRequest, db: Session = Depends(get_db)):
     service = AuthService(db)
     user = service.authenticate(
         email=payload.email, password=payload.password, school_id=payload.school_id
@@ -51,7 +57,7 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)):
 def logout(payload: LogoutRequest, db: Session = Depends(get_db)):
     service = AuthService(db)
     service.logout(payload.refresh_token)
-    
+
 @router.get("/me", response_model=UserRead)
 def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user

@@ -9,7 +9,8 @@ from app.models.enums import EnrollmentStatus
 from app.repositories.assessment_repository import AssessmentRepository
 from app.repositories.assignment_repository import AssignmentRepository
 from app.repositories.submission_repository import SubmissionRepository
-
+from app.models.assessment import AssessmentQuestion
+from app.models.user import User as UserModel
 
 class SubmissionService:
     def __init__(self, db: Session):
@@ -62,3 +63,21 @@ class SubmissionService:
         if assignment.assigned_by != teacher.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this assignment.")
         return self.submissions.list_for_assignment(assignment_id)
+    
+    def get_detail_for_teacher(self, *, submission_id, teacher):
+        submission = self.submissions.get_by_id(submission_id)
+        if submission is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found.")
+        if submission.assignment.assigned_by != teacher.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this assignment.")
+
+        student = self.db.get(UserModel, submission.student_id)
+        answers = []
+        for a in submission.answers:
+            question = self.db.get(AssessmentQuestion, a.question_id)
+            answers.append({
+                "id": a.id, "question_id": a.question_id, "question_text": question.question_text,
+                "max_score": float(question.max_score), "answer_text": a.answer_text, "score": a.score,
+            })
+        return {"id": submission.id, "student_name": student.full_name, "status": submission.status.value,
+                "reviewed_at": submission.reviewed_at, "answers": answers}

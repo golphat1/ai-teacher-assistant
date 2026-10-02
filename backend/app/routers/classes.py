@@ -45,3 +45,7 @@ def enroll_student(
     service = ClassService(db)
     enrollment = service.enroll_student(class_id=class_id, student_id=payload.student_id, teacher=current_user)
     return{"id": str(enrollment.id), "class_id": str(class_id), "student_id": str(payload.student_id)}
+
+@router.get("", response_model=list[ClassRead], dependencies=[Depends(require_roles(UserRole.TEACHER))])
+def list_classes(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return ClassService(db).list_classes_for_teacher(teacher=current_user)

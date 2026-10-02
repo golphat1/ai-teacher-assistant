@@ -2,10 +2,22 @@
 import uuid
 from fastapi import APIRouter, Depends
 from app.models import AssessmentAssignment, StudentSubmission, SubmissionAnalysis
-from app.auth import get_current_user
-from ..database import get_db
+#from app.auth import get_current_user
+#from ..database import get_db
+from app.schemas.analytics import ClassAnalyticsOverview, SubmissionTableRow
 
-router = APIRouter()
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
+from app.core.deps import get_current_user, require_roles
+from app.db.session import get_db
+from app.models.enums import UserRole
+from app.models.user import User
+from app.schemas.analytics import ClassAnalyticsOverview, SubmissionTableRow
+from app.services.analytics_service import AnalyticsService
+
+
+router = APIRouter(prefix="/classes", tags=["analytics"])
 
 @router.get("/classes/{class_id}/analytics")
 def class_analytics(class_id: uuid.UUID, db=Depends(get_db), current_user=Depends(get_current_user)):
@@ -31,3 +43,25 @@ def class_analytics(class_id: uuid.UUID, db=Depends(get_db), current_user=Depend
         "score_distribution": scores,
         "common_misconceptions": sorted(concept_counts.items(), key=lambda x: -x[1])[:5],
     }
+    
+@router.get(
+    "/{class_id}/analytics",
+    response_model=ClassAnalyticsOverview,
+    dependencies=[Depends(require_roles(UserRole.TEACHER))],
+)
+def get_analytics(
+    class_id: uuid.UUID,
+    refresh: bool = Query(False),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return AnalyticsService(db).get_overview(class_id=class_id, teacher=current_user, force_refresh=refresh)
+
+
+@router.get(
+    "/{class_id}/submissions-table",
+    response_model=list[SubmissionTableRow],
+    dependencies=[Depends(require_roles(UserRole.TEACHER))],
+)
+def get_submissions_table(class_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return AnalyticsService(db).get_submissions_table(class_id=class_id, teacher=current_user)

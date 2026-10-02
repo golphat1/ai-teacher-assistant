@@ -12,7 +12,7 @@ from app.services.ai_budget_service import AIBudgetService
 router = APIRouter(prefix="/schools/me", tags=["school-ai-settings"])
 
 
-@router.get("/ai-settings", response_model=SchoolAISettingsRead)
+@router.get("/ai-settings", response_model=SchoolAISettingsRead, dependencies=[Depends(require_roles(UserRole.TEACHER, UserRole.SCHOOL_ADMIN))])
 def get_ai_settings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     row = SchoolAISettingsRepository(db).get_or_create(current_user.school_id)
     db.commit()

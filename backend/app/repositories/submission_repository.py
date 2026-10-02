@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.submission import StudentSubmission, SubmissionAnswer
+from app.models.assignment import AssessmentAssignment
+from app.models.school_class import SchoolClass
 
 
 class SubmissionRepository:
@@ -32,3 +34,13 @@ class SubmissionRepository:
 
     def list_for_assignment(self, assignment_id: uuid.UUID) -> list[StudentSubmission]:
         return self.db.query(StudentSubmission).filter(StudentSubmission.assignment_id == assignment_id).all()
+    
+    def get_by_id_for_school(self, submission_id: uuid.UUID, *, school_id: uuid.UUID) -> StudentSubmission | None:
+        return (
+            self.db.query(StudentSubmission)
+            .join(AssessmentAssignment, StudentSubmission.assignment_id == AssessmentAssignment.id)
+            .join(SchoolClass, AssessmentAssignment.class_id == SchoolClass.id)
+            .filter(StudentSubmission.id == submission_id, SchoolClass.school_id == school_id)
+            .options(selectinload(StudentSubmission.answers))
+            .first()
+        )

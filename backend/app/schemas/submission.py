@@ -29,3 +29,18 @@ class SubmissionRead(BaseModel):
     status: str
     submitted_at: datetime
     answers: list[SubmissionAnswerRead]
+    
+class SubmissionAnswerDetailRead(BaseModel):
+    id: uuid.UUID
+    question_id: uuid.UUID
+    question_text: str
+    max_score: float
+    answer_text: str
+    score: float | None
+
+class SubmissionDetailRead(BaseModel):
+    id: uuid.UUID
+    student_name: str
+    status: str
+    reviewed_at: datetime | None
+    answers: list[SubmissionAnswerDetailRead]

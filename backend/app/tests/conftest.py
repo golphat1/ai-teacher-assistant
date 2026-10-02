@@ -1,3 +1,4 @@
+import os
 import pytest
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
@@ -7,6 +8,8 @@ from app.db.session import get_db
 from app.main import app
 from app import models  # ensures models are registered
 from app.core.config import settings
+
+os.environ.setdefault("RATE_LIMITING_ENABLED", "false")
 
 TEST_DATABASE_URL = settings.DATABASE_URL.rsplit("/", 1)[0] + "/ata_test_db"
 
@@ -50,3 +53,11 @@ def client(db_session):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+    
+@pytest.fixture(autouse=True)
+def disable_rate_limiter():
+    """Disable SlowAPI rate limiting globally during test runs."""
+    limiter = app.state.limiter
+    limiter.enabled = False
+    yield
+    limiter.enabled = True

@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.models.school_class import SchoolClass
 from app.repositories.assignment_repository import AssignmentRepository
 from app.services.assessment_service import AssessmentService
+from app.models.class_enrollment import ClassEnrollment
+from app.models.enums import EnrollmentStatus, UserRole
 
 
 class AssignmentService:
@@ -29,3 +31,27 @@ class AssignmentService:
         self.db.commit()
         self.db.refresh(assignment)
         return assignment
+
+    def get_for_submission(self, *, assignment_id, user):
+        assignment = self.assignments.get_by_id(assignment_id)
+        if assignment is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assignment not found.")
+
+        if user.role == UserRole.TEACHER:
+            if assignment.assigned_by != user.id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this assignment.")
+        else:  # student
+            enrolled = (
+                self.db.query(ClassEnrollment)
+                .filter(
+                    ClassEnrollment.class_id == assignment.class_id,
+                    ClassEnrollment.student_id == user.id,
+                    ClassEnrollment.status == EnrollmentStatus.ACTIVE,
+                )
+                .first()
+            )
+            if enrolled is None:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not enrolled in this class.")
+
+        assessment = self.assessment_service.assessments.get_by_id(assignment.assessment_id)
+        return assignment, assessment
