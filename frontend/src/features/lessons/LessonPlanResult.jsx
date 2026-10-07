@@ -34,13 +34,16 @@ export default function LessonPlanResult({ result }) {
         </Section>
 
         <Section title="Teaching activities">
-          <ul className="space-y-2 text-sm text-slate-700">
+          <ul className="space-y-3 text-sm text-slate-700">
             {result.teaching_activities.map((activity, i) => (
               <li key={i}>
-                <span className="font-medium">{activity.title}</span> ({activity.duration_minutes} min) —{' '}
-                {activity.description}
-              </li>
-            ))}
+                <div className="font-medium">{activity.title} <span className="text-slate-400 font-normal">({activity.duration_minutes} min)</span></div>
+                <div className="mt-1 pl-3 border-l-2 border-slate-200">
+                  <p><span className="text-slate-500">Teacher:</span> {activity.teacher_actions}</p>
+                  <p><span className="text-slate-500">Students:</span> {activity.student_actions}</p>
+                  </div>
+                  </li>
+                ))}
           </ul>
         </Section>
 
@@ -69,14 +72,21 @@ export default function LessonPlanResult({ result }) {
         </Section>
 
         <Section title="Marking rubric">
-          <ul className="space-y-1 text-sm text-slate-700">
+          <div className="space-y-4 text-sm text-slate-700">
             {result.marking_rubric.map((c, i) => (
-              <li key={i}>
-                <span className="font-medium">{c.criterion}</span> ({c.max_points} pts) — {c.description}
-              </li>
-            ))}
-          </ul>
-        </Section>
+              <div key={i}>
+                <p className="font-medium">{c.criterion} <span className="text-slate-400 font-normal">({c.max_points} pts) — {c.description}</span></p>
+                <ul className="mt-1 pl-4 list-disc space-y-0.5">
+                  {c.performance_levels.map((level, j) => (
+                    <li key={j}>
+                      <span className="font-medium">{level.level}</span> ({level.points} pts): {level.descriptor}
+                      </li>
+                    ))}
+                    </ul>
+                    </div>
+                  ))}
+                  </div>
+                </Section>
 
         <Section title="Homework">
           <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">

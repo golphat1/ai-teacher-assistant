@@ -2,6 +2,7 @@ import { useState } from 'react';
 import LessonRequestForm from '../features/lessons/LessonRequestForm';
 import LessonPlanResult from '../features/lessons/LessonPlanResult';
 import { generateLessonPlan } from '../api/lessons';
+import CreateAssessmentPanel from '../features/assessments/CreateAssessmentPanel';
 
 export default function TeacherDashboardPage() {
   const [result, setResult] = useState(null);
@@ -20,6 +21,7 @@ export default function TeacherDashboardPage() {
       </div>
 
       {result && <LessonPlanResult result={result} />}
+      {result && <CreateAssessmentPanel lessonPlanId={result.lesson_plan_id} />}
     </div>
   );
 }

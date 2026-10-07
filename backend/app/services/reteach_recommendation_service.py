@@ -11,6 +11,7 @@ from app.models.school_class import SchoolClass
 from app.repositories.ai_request_log_repository import AIRequestLogRepository
 from app.services.ai_budget_service import AIBudgetService
 from app.services.concept_priority_service import ConceptPriorityService
+from app.ai.moderation import assert_not_flagged
 
 
 class ReteachRecommendationService:
@@ -46,12 +47,12 @@ class ReteachRecommendationService:
             result, usage, provider_name, _ = self.orchestrator.generate_reteach_recommendations(
                 [c.model_dump() for c in top_concepts]
             )
-        except AIGenerationError as exc:
-            self.ai_logs.log(
-                school_id=teacher.school_id, user_id=teacher.id, purpose="reteach_recommendation",
-                provider=settings.ai_provider, model=model_name, prompt_tokens=0, completion_tokens=0,
-                latency_ms=0, status="error", error_message=str(exc),
+            combined_text = "\n".join(
+                f"{r.why_it_matters} {r.suggested_activity} {r.check_for_understanding} {r.follow_up_resource}"
+                for r in result.recommendations
             )
+            assert_not_flagged(combined_text)
+        except AIGenerationError as exc:
             self.db.commit()
             raise HTTPException(status_code=http_status.HTTP_502_BAD_GATEWAY, detail="Recommendation generation failed.")
 

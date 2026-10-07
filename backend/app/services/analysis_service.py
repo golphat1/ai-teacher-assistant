@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from fastapi import status as http_status
 from sqlalchemy.orm import Session, selectinload
 
+from app.ai.moderation import assert_not_flagged
 from app.ai.orchestrator import AIOrchestrator
 from app.ai.providers.base import AIGenerationError
 from app.core.config import settings
@@ -15,6 +16,7 @@ from app.models.school_class import SchoolClass
 from app.models.submission import StudentSubmission
 from app.models.submission_analysis import SubmissionAnalysis
 from app.repositories.ai_request_log_repository import AIRequestLogRepository
+from app.repositories.submission_repository import SubmissionRepository
 from app.services.ai_budget_service import AIBudgetService
 
 
@@ -24,6 +26,7 @@ class AnalysisService:
         self.orchestrator = AIOrchestrator()
         self.ai_logs = AIRequestLogRepository(db)
         self.budget = AIBudgetService(db)
+        self.submissions = SubmissionRepository(db)
 
     def _get_submission_for_teacher(self, *, submission_id: uuid.UUID, teacher):
         """Fetch a submission scoped to the teacher's school, then verify ownership.
@@ -49,7 +52,12 @@ class AnalysisService:
         return submission
 
     def analyze_submission(self, *, submission_id: uuid.UUID, teacher):
-        submission = self._get_submission_for_teacher(submission_id=submission_id, teacher=teacher)
+        #submission = self._get_submission_for_teacher(submission_id=submission_id, teacher=teacher)
+        submission = self.submissions.get_by_id_for_school(submission_id, school_id=teacher.school_id)
+        if submission is None:
+            raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail="Submission not found.")
+        if submission.assignment.assigned_by != teacher.id:
+            raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail="You do not own this assignment.")
 
         answers = submission.answers
         real_question_ids = {str(a.question_id) for a in answers}
@@ -72,12 +80,9 @@ class AnalysisService:
 
         try:
             result, usage, provider_name, _ = self.orchestrator.analyze_submission(questions_with_answers)
-        except AIGenerationError as exc:
-            self.ai_logs.log(
-                school_id=teacher.school_id, user_id=teacher.id, purpose="submission_analysis",
-                provider=settings.ai_provider, model=model_name, prompt_tokens=0, completion_tokens=0,
-                latency_ms=0, status="error", error_message=str(exc),
-            )
+            combined_text = "\n".join([result.feedback_text] + result.strengths + result.weaknesses + result.recommendations)
+            assert_not_flagged(combined_text)
+        except AIGenerationError:
             self.db.commit()
             raise HTTPException(status_code=http_status.HTTP_502_BAD_GATEWAY, detail="Analysis failed. Please try again.")
 
@@ -141,9 +146,13 @@ class AnalysisService:
         return analysis
 
     def get_analysis(self, *, submission_id: uuid.UUID, teacher):
-        submission = self._get_submission_for_teacher(submission_id=submission_id, teacher=teacher)
+        submission = self.submissions.get_by_id_for_school(submission_id, school_id=teacher.school_id)  # CHANGED
+        if submission is None:
+            raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail="Submission not found.")
+        if submission.assignment.assigned_by != teacher.id:
+            raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail="You do not own this assignment.")
 
-        analysis = self.db.query(SubmissionAnalysis).filter(SubmissionAnalysis.submission_id == submission.id).first()
+        analysis = self.db.query(SubmissionAnalysis).filter(SubmissionAnalysis.submission_id == submission_id).first()
         if analysis is None:
             raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail="Analysis not found.")
         return analysis

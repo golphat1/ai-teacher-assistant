@@ -32,12 +32,15 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o-mini"  # pick the one you want
     ai_max_retries: int = 2
     use_mock_ai: bool = True  # flip to false once real keys are set
+    ai_request_log_retention_days: int = 90
 
     # CORS
     cors_origins: str = "http://localhost:5173"
 
     # Rate limiting
     rate_limiting_enabled: bool = True
+    
+    moderation_enabled: bool = True
 
     @property
     def cors_origins_list(self) -> list[str]:

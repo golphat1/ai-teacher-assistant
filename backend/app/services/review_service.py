@@ -12,19 +12,15 @@ from app.models.score_override_audit import ScoreOverrideAudit
 from app.models.submission import StudentSubmission, SubmissionAnswer
 from app.models.submission_analysis import SubmissionAnalysis
 from app.schemas.review import SubmissionResultsRead
-
+from app.repositories.submission_repository import SubmissionRepository
 
 class ReviewService:
     def __init__(self, db: Session):
         self.db = db
+        self.submissions = SubmissionRepository(db)
 
-    def _get_submission_or_404(self, submission_id: uuid.UUID, *, school_id: uuid.UUID) -> StudentSubmission:
-        submission = (
-            self.db.query(StudentSubmission)
-            .options(selectinload(StudentSubmission.answers))
-            .filter(StudentSubmission.id == submission_id)
-            .first()
-        )
+    def _get_submission_or_404(self, submission_id: uuid.UUID, *, school_id: uuid.UUID) -> StudentSubmission:  # CHANGED signature
+        submission = self.submissions.get_by_id_for_school(submission_id, school_id=school_id)
         if submission is None:
             raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail="Submission not found.")
         return submission
@@ -33,8 +29,8 @@ class ReviewService:
         if submission.assignment.assigned_by != teacher.id:
             raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail="You do not own this assignment.")
 
-    def override_score(self, *, submission_id: uuid.UUID, answer_id: uuid.UUID, new_score: float, reason: str | None, teacher):
-        submission = self._get_submission_or_404(submission_id, school_id=teacher.school_id)
+    def override_score(self, *, submission_id, answer_id, new_score, reason, teacher):
+        submission = self._get_submission_or_404(submission_id, school_id=teacher.school_id)  # CHANGED call site
         self._assert_teacher_owns(submission, teacher)
 
         answer = next((a for a in submission.answers if a.id == answer_id), None)
@@ -54,8 +50,8 @@ class ReviewService:
         self.db.refresh(audit)
         return audit
 
-    def mark_reviewed(self, *, submission_id: uuid.UUID, teacher):
-        submission = self._get_submission_or_404(submission_id, school_id=teacher.school_id)
+    def mark_reviewed(self, *, submission_id, teacher):
+        submission = self._get_submission_or_404(submission_id, school_id=teacher.school_id)  # CHANGED call site
         self._assert_teacher_owns(submission, teacher)
 
         if submission.status != SubmissionStatus.ANALYZED:
@@ -75,7 +71,7 @@ class ReviewService:
         return self.db.get(School, school_class.school_id)
 
     def get_results_for_student(self, *, submission_id: uuid.UUID, student) -> SubmissionResultsRead:
-        submission = self._get_submission_or_404(submission_id, school_id=student.school_id)
+        submission = self._get_submission_or_404(submission_id, school_id=student.school_id)  # CHANGED
         if submission.student_id != student.id:
             raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail="This is not your submission.")
 

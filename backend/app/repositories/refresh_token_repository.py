@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
+from sqlalchemy import delete, or_
 from sqlalchemy.orm import Session
 
 from app.models.refresh_token import RefreshToken
@@ -27,3 +28,13 @@ class RefreshTokenRepository:
         if record:
             record.revoked = True
             self.db.flush()
+            
+    def purge_expired(self, now: datetime) -> int:
+        """Delete tokens that are expired or revoked. Returns the number of rows deleted."""
+        result = self.db.execute(
+            delete(RefreshToken).where(
+                or_(RefreshToken.expires_at < now, RefreshToken.revoked.is_(True))
+            )
+        )
+        self.db.commit()
+        return result.rowcount

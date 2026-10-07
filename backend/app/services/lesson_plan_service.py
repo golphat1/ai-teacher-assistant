@@ -15,7 +15,7 @@ from app.models.enums import LessonStatus
 from app.models.user import User
 from app.repositories.lesson_plan_repository import LessonPlanRepository
 from app.schemas.lesson_plan import LessonPlanGenerateRequest, LessonPlanGenerateResponse
-
+from app.ai.moderation import assert_not_flagged
 
 class LessonPlanService:
     def __init__(self, db: Session):
@@ -41,7 +41,14 @@ class LessonPlanService:
         else:
             self.budget.check_budget(teacher.school_id)
             try:
-                result, usage, provider_name, prompt_version = self.orchestrator.generate_lesson_content(request)
+                result, usage, provider_name, _ = self.orchestrator.generate_lesson_content(request)
+                combined_text = "\n".join(
+                    result.learning_objectives
+                    + [f"{a.teacher_actions} {a.student_actions}" for a in result.teaching_activities]
+                    + result.homework
+                    + result.revision_questions
+                )
+                assert_not_flagged(combined_text)
             except AIGenerationError as exc:
                 self.ai_logs.log(
                     school_id=teacher.school_id, user_id=teacher.id, purpose="lesson_generation",
